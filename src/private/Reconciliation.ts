@@ -1,56 +1,67 @@
-import * as Html from './Html'
+import * as Html from '../Html'
 
 import * as Utils from './Utils'
 
-/** Note: references to a mutable domNode. */
-export type VirtualDom<E> = {
-    html: Html.Html<E>,
+/** An inmutable HTML virtual node reconciled with a mutable DOM element.
+*/
+export type Reconciled<Action> = {
+    html: Html.Html<Action>,
     node: Element | Text,
 }
 
+/** This is how to initialize the virtual DOM loop. It basically ignores the content of the DOM
+ * and just replaces the `node` with new DOM nodes.
+ * 
+ * The `actionCallback` is the function that will be called when an event handler receives an Action.
+*/
+export function init<Action>(node: Element | Text, html: Html.Html<Action>, actionCallback: (event: Action) => void): Reconciled<Action> {
+    const newDomNode = render(html, actionCallback)
+    node.replaceWith(newDomNode)
+    return Object.freeze({ node: newDomNode, html: html })
+}
+
+/** Does the diffing and reconciliation algorithm. It sets a `Reconciled`'s html
+ * also applying the DOM mutations necesary to keep them in sync.
+ *
+ * Not optimized at all.
+*/
 export function patch<E>(
-    virtualDom: VirtualDom<E>,
+    virtualDom: Reconciled<E>,
     html: Html.Html<E>,
-    callback: (event: E) => void
-): VirtualDom<E> {
+    actionCallback: (event: E) => void
+): Reconciled<E> {
     if (virtualDom.html === html) {
         return virtualDom
     }
 
     switch (virtualDom.html.nodeType) {
         case 'text':
-            return replace(virtualDom.node, html, callback)
+            return init(virtualDom.node, html, actionCallback)
 
         case 'node':
             switch (html.nodeType) {
                 case 'text':
-                    return replace(virtualDom.node, html, callback)
+                    return init(virtualDom.node, html, actionCallback)
                 default:
                     if (virtualDom.html.tagName === html.tagName && virtualDom.node instanceof Element) {
                         patchAttributes(
                             virtualDom.node,
                             virtualDom.html.attributes,
                             html.attributes,
-                            callback
+                            actionCallback
                         )
                         patchChildren(
                             virtualDom.node,
                             virtualDom.html.children,
                             html.children,
-                            callback
+                            actionCallback
                         )
-                        return { html: html, node: virtualDom.node }
+                        return Object.freeze({ html: html, node: virtualDom.node })
                     } else {
-                        return replace(virtualDom.node, html, callback)
+                        return init(virtualDom.node, html, actionCallback)
                     }
             }
     }
-}
-
-export function replace<E>(node: Element | Text, html: Html.Html<E>, dispatch: (event: E) => void): VirtualDom<E> {
-    const newDomNode = render(html, dispatch)
-    node.replaceWith(newDomNode)
-    return { node: newDomNode, html: html }
 }
 
 function render<Evt>(html: Html.Html<Evt>, dispatch: (evt: Evt) => void): Element | Text {
@@ -134,7 +145,7 @@ function patchAttributes<T>(
     )
 }
 
-/** Helper */
+/** Helper function. It "zips" or "maps" two arrays into one. */
 function mergeArraysComparingElements<A, B>(
     xs: Array<A>,
     ys: Array<A>,
