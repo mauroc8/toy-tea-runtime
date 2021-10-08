@@ -12,6 +12,7 @@
     "typescript": "^4.4.3"
   },
   "scripts": {
-    "start": "parcel example/index.html"
+    "start": "parcel example/index.html",
+    "build": "parcel build example/index.html --public-url=./ --detailed-report"
   }
 }

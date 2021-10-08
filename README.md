@@ -12,9 +12,10 @@ I made a toy implementation, hooked up with the simplest event loop I can think 
 The code is heavily inspired by Elm, especially [The Elm Architecture runtime](https://guide.elm-lang.org/architecture/) and
 [Elm's HTML package](https://package.elm-lang.org/packages/elm/html/latest/). The Elm Architecture refers to the idea,
 popularized by React/Redux, of having one centralized state and one centralized "update" function (reducer), and then declaratively
-describing how the HTML should look-like.
-React, Vue and other popular frontend frameworks implement a virtual DOM, but with more
-features like components (virtual DOM with local state and lifecycle hooks) and implicit context.
+describing how the HTML should look like.
+
+> React, Vue and other popular frontend frameworks implement a component system on top of the virtual DOM.
+> This implementation doesn't have local state nor lifecycle hooks.
 
 ## About the example
 
@@ -68,7 +69,7 @@ function button(action: Action): Html<Action> {
 }
 ```
 
-Finally, `update` creates an updated state in response of an action:
+Finally, `update` returns an updated state in response of an action:
 
 ```ts
 type Action = 'Increase' | 'Decrease'
@@ -96,12 +97,11 @@ The core implementation consists of two parts:
 ## About the Virtual DOM
 
 The functions defined in [src/Html.ts](src/Html.ts) create virtual DOM nodes (of type `Html<A>`).
-The file [src/private/Reconciliation.ts](src/private/Reconciliation.ts) contains the simplest and unoptimized
+The file [src/private/Reconciliation.ts](src/private/Reconciliation.ts) contains the simplest unoptimized
 [Reconciliation And Diffing Algorithm](https://hackernoon.com/virtual-dom-reconciliation-and-diffing-algorithm-explained-simply-ycn34gr)
-I could came up with. It figures out how a way to make the *real* DOM resemble the virtual DOM (`Html<A>` objects).
+I could came up with. It figures out a way to make the *real* DOM resemble the virtual DOM (`Html<A>` objects).
 
 The API for creating HTML nodes is heavily inspired by [Elm's HTML package](https://package.elm-lang.org/packages/elm/html/latest/).
-
 It differs in most virtual DOM API's (like React's, Vue's, Jsx, etc) because it receives the "attributes/properties" as a list instead of
 an object:
 
