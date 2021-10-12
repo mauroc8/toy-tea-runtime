@@ -1,9 +1,9 @@
 {
-  "name": "toy-vdom",
+  "name": "toy-tea-runtime",
   "version": "0.1.0",
   "description": "A toy implementation of a virtual DOM",
   "main": "example/index.html",
-  "repository": "https://github.com/mauroc8/toy-vdom",
+  "repository": "https://github.com/mauroc8/toy-tea-runtime",
   "author": "Mauro Cano <maurocanobrusa@gmail.com>",
   "license": "MIT",
   "private": false,
